@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informes de Trabajo</title>
+    <link rel="manifest" data-href="data:application/json,{&quot;name&quot;:&quot;Informes de Trabajo&quot;,&quot;short_name&quot;:&quot;Informes&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#ffffff&quot;,&quot;theme_color&quot;:&quot;#2563eb&quot;}">
+    <meta name="theme-color" content="#2563eb">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .app-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: calc(100vh - 20px);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .photo-capture {
+            border: 2px dashed #d1d5db;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        .photo-capture:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+        
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .photo-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .photo-preview {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        
+        .photo-delete {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+        
+        .progress-bar {
+            background: #e5e7eb;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            transition: width 0.3s;
+        }
+        
+        .material-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .material-item input {
+            margin: 5px 0;
+        }
+        
+        .material-delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .summary-card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #3b82f6;
+            margin-bottom: 20px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .navigation {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+        }
+        
+        .alert {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left-color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>📋 Informes de Trabajo</h1>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="connectionStatus">Offline Ready</span>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 16.67%"></div>
+        </div>
+        
+        <div class="content">
+            <!-- Sección 1: Información Básica -->
+            <div class="section active" id="section1">
+                <div class="section-title">
+                    <span class="emoji">📍</span>
+                    Información del Trabajo
+                </div>
+                
+                <div class="form-group">
+                    <label for="cliente">Cliente</label>
+                    <input type="text" id="cliente" placeholder="Nombre del cliente o empresa">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ubicacion">Ubicación</label>
+                    <input type="text" id="ubicacion" placeholder="Dirección del trabajo">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tipoTrabajo">Tipo de Trabajo</label>
+                    <select id="tipoTrabajo">
+                        <option value="">Seleccionar...</option>
+                        <option value="plomeria">Plomería</option>
+                        <option value="electricidad">Electricidad</option>
+                        <option value="mantenimiento">Mantenimiento General</option>
+                        <option value="climatizacion">Climatización</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="motivoLlamada">Motivo de la Llamada</label>
+                    <textarea id="motivoLlamada" placeholder="Ej: Fuga de agua en el baño del segundo piso..."></textarea>
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn" onclick="nextSection()">Continuar →</button>
+                </div>
+            </div>
+            
+            <!-- Sección 2: Estado Inicial -->
+            <div class="section" id="section2">
+                <div class="section-title">
+                    <span class="emoji">🔍</span>
+                    Estado Inicial
+                </div>
+                
+                <div class="form-group">
+                    <label for="estadoInicial">Descripción del Problema</label>
+                    <textarea id="estadoInicial" placeholder="Describe detalladamente el estado inicial del problema..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Fotos del Problema (Antes)</label>
+                    <div class="photo-capture" onclick="document.getElementById('fotoAntes').click()">
+                        📸 Agregar foto del estado inicial<br>
+                        <small>Toca para usar la cámara</small>
+                    </div>
+                    <input type="file" id="fotoAntes" accept="image/*" capture="camera" style="display: none;" onchange="addPhoto('fotoAntes', 'fotosAntesGallery')">
+                    <div id="fotosAntesGallery" class="photo-gallery"></div>
+                </div>
+                
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSection()">← Anterior</button>
+                    <button class="btn" onclick="nextSection()">Continuar →</button>
+                </div>
+            </div>
+            
+            <!-- Sección 3: Trabajo Realizado -->
+            <div class="section" id="section3">
+                <div class="section-title">
+                    <span class="emoji">🔧</span>
+                    Trabajo Realizado
+                </div>
+                
+                <div class="form-group">
+                    <label for="trabajoRealizado">Descripción del Trabajo</label>
+                    <textarea id="trabajoRealizado" placeholder="Describe paso a paso el trabajo que realizaste..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tiempoInicio">Hora de Inicio</label>
+                    <input type="time" id="tiempoInicio">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tiempoFin">Hora de Finalización</label>
+                    <input type="time" id="tiempoFin">
+                </div>
+                
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSection()">← Anterior</button>
+                    <button class="btn" onclick="nextSection()">Continuar →</button>
+                </div>
+            </div>
+            
+            <!-- Sección 4: Materiales -->
+            <div class="section" id="section4">
+                <div class="section-title">
+                    <span class="emoji">📦</span>
+                    Materiales Utilizados
+                </div>
+                
+                <div id="materialesList">
+                    <div class="material-item">
+                        <button class="material-delete" onclick="removeMaterial(this)" title="Eliminar material">×</button>
+                        <div style="padding-right: 40px;">
+                            <input type="text" placeholder="Material" class="material-name" style="margin-bottom: 5px;">
+                            <input type="number" placeholder="Cantidad" class="material-qty" style="width: 48%; margin-right: 4%;">
+                            <input type="number" placeholder="Valor/Precio" class="material-price" style="width: 48%;" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn-secondary btn" onclick="addMaterial()">+ Agregar Material</button>
+                
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSection()">← Anterior</button>
+                    <button class="btn" onclick="nextSection()">Continuar →</button>
+                </div>
+            </div>
+            
+            <!-- Sección 5: Estado Final -->
+            <div class="section" id="section5">
+                <div class="section-title">
+                    <span class="emoji">✅</span>
+                    Estado Final
+                </div>
+                
+                <div class="form-group">
+                    <label for="estadoFinal">Resultado del Trabajo</label>
+                    <textarea id="estadoFinal" placeholder="Describe el estado final y cómo quedó resuelto el problema..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Fotos del Resultado (Después)</label>
+                    <div class="photo-capture" onclick="document.getElementById('fotoDespues').click()">
+                        📸 Agregar foto del resultado<br>
+                        <small>Toca para usar la cámara</small>
+                    </div>
+                    <input type="file" id="fotoDespues" accept="image/*" capture="camera" style="display: none;" onchange="addPhoto('fotoDespues', 'fotosDespuesGallery')">
+                    <div id="fotosDespuesGallery" class="photo-gallery"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="observaciones">Observaciones Adicionales</label>
+                    <textarea id="observaciones" placeholder="Recomendaciones, próximos mantenimientos, etc."></textarea>
+                </div>
+                
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSection()">← Anterior</button>
+                    <button class="btn" onclick="nextSection()">Ver Resumen →</button>
+                </div>
+            </div>
+            
+            <!-- Sección 6: Resumen y Generar PDF -->
+            <div class="section" id="section6">
+                <div class="section-title">
+                    <span class="emoji">📄</span>
+                    Resumen del Informe
+                </div>
+                
+                <div class="summary-card" id="summaryCard">
+                    <!-- El resumen se generará dinámicamente -->
+                </div>
+                
+                <div class="alert">
+                    <strong>💾 Guardado Offline:</strong> Tu informe se ha guardado localmente y se sincronizará cuando tengas conexión.
+                </div>
+                
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSection()">← Editar</button>
+                    <button class="btn" onclick="generatePDF()">📄 Generar PDF</button>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="newReport()" style="margin-top: 10px;">
+                    🔄 Nuevo Informe
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        let currentSection = 1;
+        const totalSections = 6;
+        let reportData = {};
+        
+        // Variables globales para almacenar las fotos
+        let fotosAntes = [];
+        let fotosDespues = [];
+        
+        // Simular funcionalidad offline
+        function updateConnectionStatus() {
+            const status = navigator.onLine ? 'Online' : 'Offline Ready';
+            document.getElementById('connectionStatus').textContent = status;
+        }
+        
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        updateConnectionStatus();
+        
+        function updateProgress() {
+            const progress = (currentSection / totalSections) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+        
+        function showSection(sectionNumber) {
+            // Ocultar todas las secciones
+            for (let i = 1; i <= totalSections; i++) {
+                document.getElementById(`section${i}`).classList.remove('active');
+            }
+            
+            // Mostrar la sección actual
+            document.getElementById(`section${sectionNumber}`).classList.add('active');
+            currentSection = sectionNumber;
+            updateProgress();
+        }
+        
+        function nextSection() {
+            if (currentSection < totalSections) {
+                if (currentSection === totalSections - 1) {
+                    generateSummary();
+                }
+                showSection(currentSection + 1);
+            }
+        }
+        
+        function prevSection() {
+            if (currentSection > 1) {
+                showSection(currentSection - 1);
+            }
+        }
+        
+        function addPhoto(inputId, galleryId) {
+            const input = document.getElementById(inputId);
+            const gallery = document.getElementById(galleryId);
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const photoId = Date.now(); // ID único para la foto
+                    const photoItem = document.createElement('div');
+                    photoItem.className = 'photo-item';
+                    photoItem.innerHTML = `
+                        <img src="${e.target.result}" class="photo-preview" alt="Foto capturada">
+                        <button class="photo-delete" onclick="removePhoto(${photoId}, '${galleryId}')" title="Eliminar foto">×</button>
+                    `;
+                    
+                    gallery.appendChild(photoItem);
+                    
+                    // Guardar la foto en el array correspondiente
+                    const photoData = {
+                        id: photoId,
+                        data: e.target.result,
+                        element: photoItem
+                    };
+                    
+                    if (galleryId === 'fotosAntesGallery') {
+                        fotosAntes.push(photoData);
+                    } else if (galleryId === 'fotosDespuesGallery') {
+                        fotosDespues.push(photoData);
+                    }
+                }
+                
+                reader.readAsDataURL(file);
+                input.value = ''; // Limpiar el input para permitir agregar la misma foto de nuevo
+            }
+        }
+        
+        function removePhoto(photoId, galleryId) {
+            if (galleryId === 'fotosAntesGallery') {
+                const photoIndex = fotosAntes.findIndex(photo => photo.id === photoId);
+                if (photoIndex !== -1) {
+                    fotosAntes[photoIndex].element.remove();
+                    fotosAntes.splice(photoIndex, 1);
+                }
+            } else if (galleryId === 'fotosDespuesGallery') {
+                const photoIndex = fotosDespues.findIndex(photo => photo.id === photoId);
+                if (photoIndex !== -1) {
+                    fotosDespues[photoIndex].element.remove();
+                    fotosDespues.splice(photoIndex, 1);
+                }
+            }
+        }
+        
+        function addMaterial() {
+            const materialsList = document.getElementById('materialesList');
+            const newMaterial = document.createElement('div');
+            newMaterial.className = 'material-item';
+            newMaterial.innerHTML = `
+                <button class="material-delete" onclick="removeMaterial(this)" title="Eliminar material">×</button>
+                <div style="padding-right: 40px;">
+                    <input type="text" placeholder="Material" class="material-name" style="margin-bottom: 5px;">
+                    <input type="number" placeholder="Cantidad" class="material-qty" style="width: 48%; margin-right: 4%;">
+                    <input type="number" placeholder="Valor/Precio" class="material-price" style="width: 48%;" step="0.01">
+                </div>
+            `;
+            materialsList.appendChild(newMaterial);
+        }
+        
+        function removeMaterial(button) {
+            const materialItem = button.parentElement;
+            materialItem.remove();
+        }
+        
+        function collectFormData() {
+            const data = {
+                cliente: document.getElementById('cliente').value,
+                ubicacion: document.getElementById('ubicacion').value,
+                tipoTrabajo: document.getElementById('tipoTrabajo').value,
+                motivoLlamada: document.getElementById('motivoLlamada').value,
+                estadoInicial: document.getElementById('estadoInicial').value,
+                trabajoRealizado: document.getElementById('trabajoRealizado').value,
+                tiempoInicio: document.getElementById('tiempoInicio').value,
+                tiempoFin: document.getElementById('tiempoFin').value,
+                estadoFinal: document.getElementById('estadoFinal').value,
+                observaciones: document.getElementById('observaciones').value,
+                fecha: new Date().toLocaleDateString('es-ES'),
+                hora: new Date().toLocaleTimeString('es-ES'),
+                materiales: []
+            };
+            
+            // Recopilar materiales
+            const materialItems = document.querySelectorAll('.material-item');
+            materialItems.forEach(item => {
+                const name = item.querySelector('.material-name').value;
+                const qty = item.querySelector('.material-qty').value;
+                const price = item.querySelector('.material-price').value;
+                
+                if (name && qty) {
+                    data.materiales.push({ name, qty, price: price || '0' });
+                }
+            });
+            
+            // Agregar información de fotos
+            data.cantidadFotosAntes = fotosAntes.length;
+            data.cantidadFotosDespues = fotosDespues.length;
+            
+            return data;
+        }
+        
+        function generateSummary() {
+            const data = collectFormData();
+            const summaryCard = document.getElementById('summaryCard');
+            
+            let materialesHtml = '';
+            let totalCosto = 0;
+            if (data.materiales.length > 0) {
+                materialesHtml = '<div class="summary-item"><strong>Materiales:</strong><div>';
+                data.materiales.forEach(material => {
+                    const precio = parseFloat(material.price) || 0;
+                    totalCosto += precio * parseFloat(material.qty);
+                    materialesHtml += `<div>• ${material.qty} × ${material.name} - ${precio.toFixed(2)}</div>`;
+                });
+                materialesHtml += `<div style="border-top: 1px solid #e5e7eb; margin-top: 10px; padding-top: 10px;"><strong>Total estimado: ${totalCosto.toFixed(2)}</strong></div>`;
+                materialesHtml += '</div></div>';
+            }
+            
+            summaryCard.innerHTML = `
+                <div class="summary-item">
+                    <strong>Cliente:</strong>
+                    <span>${data.cliente || 'No especificado'}</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Ubicación:</strong>
+                    <span>${data.ubicacion || 'No especificado'}</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Tipo de Trabajo:</strong>
+                    <span>${data.tipoTrabajo || 'No especificado'}</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Fecha:</strong>
+                    <span>${data.fecha}</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Duración:</strong>
+                    <span>${data.tiempoInicio && data.tiempoFin ? `${data.tiempoInicio} - ${data.tiempoFin}` : 'No especificado'}</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Evidencia Fotográfica:</strong>
+                    <span>${data.cantidadFotosAntes} foto(s) inicial - ${data.cantidadFotosDespues} foto(s) final</span>
+                </div>
+                ${materialesHtml}
+            `;
+            
+            // Guardar datos localmente (simulando almacenamiento offline)
+            reportData = data;
+        }
+        
+        function generatePDF() {
+            const data = collectFormData();
+            
+            // Mostrar indicador de generación
+            const summaryCard = document.querySelector('.summary-card');
+            summaryCard.innerHTML = `
+                <div class="alert" style="text-align: center;">
+                    <strong>📄 Generando PDF...</strong><br>
+                    Por favor espera mientras se procesa el informe
+                </div>
+            `;
+            
+            setTimeout(() => {
+                createPDFReport(data);
+            }, 500);
+        }
+        
+        async function createPDFReport(data) {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            
+            // Configuración inicial
+            let yPosition = 20;
+            const pageWidth = pdf.internal.pageSize.width;
+            const margin = 20;
+            const contentWidth = pageWidth - (margin * 2);
+            
+            // Función helper para agregar texto con wrap
+            function addText(text, x, y, options = {}) {
+                const maxWidth = options.maxWidth || contentWidth;
+                const fontSize = options.fontSize || 12;
+                const isBold = options.bold || false;
+                
+                pdf.setFontSize(fontSize);
+                if (isBold) pdf.setFont(undefined, 'bold');
+                else pdf.setFont(undefined, 'normal');
+                
+                const lines = pdf.splitTextToSize(text, maxWidth);
+                pdf.text(lines, x, y);
+                return y + (lines.length * (fontSize * 0.5));
+            }
+            
+            // Función para verificar si necesitamos una nueva página
+            function checkNewPage(neededSpace = 30) {
+                if (yPosition + neededSpace > pdf.internal.pageSize.height - 20) {
+                    pdf.addPage();
+                    yPosition = 20;
+                }
+            }
+            
+            try {
+                // ENCABEZADO
+                pdf.setFillColor(37, 99, 235);
+                pdf.rect(0, 0, pageWidth, 40, 'F');
+                
+                pdf.setTextColor(255, 255, 255);
+                yPosition = addText('INFORME DE TRABAJO', margin, 25, { fontSize: 20, bold: true });
+                
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(10);
+                pdf.text('Generado: ' + new Date().toLocaleString('es-ES'), pageWidth - margin - 50, 35);
+                
+                yPosition = 60;
+                pdf.setTextColor(0, 0, 0);
+                
+                // INFORMACIÓN BÁSICA
+                yPosition = addText('INFORMACIÓN DEL SERVICIO', margin, yPosition, { fontSize: 16, bold: true });
+                yPosition += 10;
+                
+                pdf.setDrawColor(200, 200, 200);
+                pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 15;
+                
+                yPosition = addText(`Cliente: ${data.cliente || 'No especificado'}`, margin, yPosition, { bold: true });
+                yPosition += 8;
+                yPosition = addText(`Ubicación: ${data.ubicacion || 'No especificado'}`, margin, yPosition);
+                yPosition += 8;
+                yPosition = addText(`Tipo de Trabajo: ${data.tipoTrabajo || 'No especificado'}`, margin, yPosition);
+                yPosition += 8;
+                yPosition = addText(`Fecha: ${data.fecha}`, margin, yPosition);
+                yPosition += 8;
+                if (data.tiempoInicio && data.tiempoFin) {
+                    yPosition = addText(`Horario: ${data.tiempoInicio} - ${data.tiempoFin}`, margin, yPosition);
+                    yPosition += 8;
+                }
+                
+                yPosition += 10;
+                
+                // MOTIVO DE LA LLAMADA
+                checkNewPage(50);
+                yPosition = addText('MOTIVO DE LA LLAMADA', margin, yPosition, { fontSize: 14, bold: true });
+                yPosition += 10;
+                pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 15;
+                
+                if (data.motivoLlamada) {
+                    yPosition = addText(data.motivoLlamada, margin, yPosition);
+                } else {
+                    yPosition = addText('No especificado', margin, yPosition);
+                }
+                yPosition += 15;
+                
+                // ESTADO INICIAL
+                checkNewPage(50);
+                yPosition = addText('ESTADO INICIAL DEL PROBLEMA', margin, yPosition, { fontSize: 14, bold: true });
+                yPosition += 10;
+                pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 15;
+                
+                if (data.estadoInicial) {
+                    yPosition = addText(data.estadoInicial, margin, yPosition);
+                } else {
+                    yPosition = addText('No especificado', margin, yPosition);
+                }
+                yPosition += 15;
+                
+                // FOTOS ANTES (si existen)
+                if (fotosAntes.length > 0) {
+                    checkNewPage(80);
+                    yPosition = addText(`EVIDENCIA FOTOGRÁFICA - ANTES (${fotosAntes.length} foto(s))`, margin, yPosition, { fontSize: 12, bold: true });
+                    yPosition += 15;
+                    
+                    let photosPerRow = 2;
+                    let photoWidth = (contentWidth / photosPerRow) - 10;
+                    let photoHeight = 60;
+                    let currentRow = 0;
+                    
+                    for (let i = 0; i < fotosAntes.length; i++) {
+                        const col = i % photosPerRow;
+                        if (col === 0 && i > 0) {
+                            currentRow++;
+                            checkNewPage(photoHeight + 20);
+                        }
+                        
+                        const x = margin + (col * (photoWidth + 10));
+                        const y = yPosition + (currentRow * (photoHeight + 15));
+                        
+                        try {
+                            pdf.addImage(fotosAntes[i].data, 'JPEG', x, y, photoWidth, photoHeight);
+                        } catch (e) {
+                            console.warn('Error agregando foto antes:', e);
+                            pdf.setFontSize(8);
+                            pdf.text('Foto no disponible', x, y + 30);
+                        }
+                    }
+                    
+                    yPosition += Math.ceil(fotosAntes.length / photosPerRow) * (photoHeight + 15) + 10;
+                }
+                
+                // TRABAJO REALIZADO
+                checkNewPage(50);
+                yPosition = addText('TRABAJO REALIZADO', margin, yPosition, { fontSize: 14, bold: true });
+                yPosition += 10;
+                pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 15;
+                
+                if (data.trabajoRealizado) {
+                    yPosition = addText(data.trabajoRealizado, margin, yPosition);
+                } else {
+                    yPosition = addText('No especificado', margin, yPosition);
+                }
+                yPosition += 15;
+                
+                // MATERIALES UTILIZADOS
+                if (data.materiales.length > 0) {
+                    checkNewPage(80);
+                    yPosition = addText('MATERIALES UTILIZADOS', margin, yPosition, { fontSize: 14, bold: true });
+                    yPosition += 10;
+                    pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+                    yPosition += 15;
+                    
+                    // Encabezados de la tabla
+                    pdf.setFontSize(10);
+                    pdf.setFont(undefined, 'bold');
+                    pdf.text('Material', margin, yPosition);
+                    pdf.text('Cantidad', margin + 80, yPosition);
+                    pdf.text('Precio Unit.', margin + 120, yPosition);
+                    pdf.text('Total', margin + 150, yPosition);
+                    yPosition += 5;
+                    
+                    pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+                    yPosition += 10;
+                    
+                    pdf.setFont(undefined, 'normal');
+                    let totalGeneral = 0;
+                    
+                    data.materiales.forEach(material => {
+                        checkNewPage(20);
+                        const precio = parseFloat(material.price) || 0;
+                        const cantidad = parseFloat(material.qty) || 0;
+                        const subtotal = precio * cantidad;
+                        totalGeneral += subtotal;
+                        
+                        pdf.text(material.name, margin, yPosition);
+                        pdf.text(cantidad.toString(), margin + 80, yPosition);
+                        pdf.text(`${precio.toFixed(2)}`, margin + 120, yPosition);
+                        pdf.text(`${subtotal.toFixed(2)}`, margin + 150, yPosition);
+                        yPosition += 12;
+                    });
+                    
+                    // Total
+                    yPosition += 5;
+                    pdf.line(margin + 120, yPosition, pageWidth - margin, yPosition);
+                    yPosition += 10;
+                    pdf.setFont(undefined, 'bold');
+                    pdf.text('TOTAL ESTIMADO:', margin + 120, yPosition);
+                    pdf.text(`${totalGeneral.toFixed(2)}`, margin + 150, yPosition);
+                    yPosition += 15;
+                    pdf.setFont(undefined, 'normal');
+                }
+                
+                // ESTADO FINAL
+                checkNewPage(50);
+                yPosition = addText('ESTADO FINAL Y RESULTADO', margin, yPosition, { fontSize: 14, bold: true });
+                yPosition += 10;
+                pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 15;
+                
+                if (data.estadoFinal) {
+                    yPosition = addText(data.estadoFinal, margin, yPosition);
+                } else {
+                    yPosition = addText('No especificado', margin, yPosition);
+                }
+                yPosition += 15;
+                
+                // FOTOS DESPUÉS (si existen)
+                if (fotosDespues.length > 0) {
+                    checkNewPage(80);
+                    yPosition = addText(`EVIDENCIA FOTOGRÁFICA - DESPUÉS (${fotosDespues.length} foto(s))`, margin, yPosition, { fontSize: 12, bold: true });
+                    yPosition += 15;
+                    
+                    let photosPerRow = 2;
+                    let photoWidth = (contentWidth / photosPerRow) - 10;
+                    let photoHeight = 60;
+                    let currentRow = 0;
+                    
+                    for (let i = 0; i < fotosDespues.length; i++) {
+                        const col = i % photosPerRow;
+                        if (col === 0 && i > 0) {
+                            currentRow++;
+                            checkNewPage(photoHeight + 20);
+                        }
+                        
+                        const x = margin + (col * (photoWidth + 10));
+                        const y = yPosition + (currentRow * (photoHeight + 15));
+                        
+                        try {
+                            pdf.addImage(fotosDespues[i].data, 'JPEG', x, y, photoWidth, photoHeight);
+                        } catch (e) {
+                            console.warn('Error agregando foto después:', e);
+                            pdf.setFontSize(8);
+                            pdf.text('Foto no disponible', x, y + 30);
+                        }
+                    }
+                    
+                    yPosition += Math.ceil(fotosDespues.length / photosPerRow) * (photoHeight + 15) + 10;
+                }
+                
+                // OBSERVACIONES
+                if (data.observaciones) {
+                    checkNewPage(50);
+                    yPosition = addText('OBSERVACIONES ADICIONALES', margin, yPosition, { fontSize: 14, bold: true });
+                    yPosition += 10;
+                    pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+                    yPosition += 15;
+                    yPosition = addText(data.observaciones, margin, yPosition);
+                }
+                
+                // PIE DE PÁGINA en la última página
+                const totalPages = pdf.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    pdf.setFontSize(8);
+                    pdf.setTextColor(128, 128, 128);
+                    pdf.text(`Página ${i} de ${totalPages}`, pageWidth - margin - 20, pdf.internal.pageSize.height - 10);
+                    pdf.text('Informe generado automáticamente', margin, pdf.internal.pageSize.height - 10);
+                }
+                
+                // Generar nombre del archivo
+                const fileName = `Informe_${(data.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+                
+                // Descargar PDF
+                pdf.save(fileName);
+                
+                // Mostrar mensaje de éxito
+                const summaryCard = document.querySelector('.summary-card');
+                summaryCard.innerHTML = `
+                    <div class="success alert">
+                        <strong>✅ ¡PDF Generado Exitosamente!</strong><br>
+                        El informe completo se ha descargado como:<br>
+                        <strong>${fileName}</strong>
+                        <br><br>
+                        📊 <strong>Contenido incluido:</strong><br>
+                        • Información completa del servicio<br>
+                        • ${fotosAntes.length} foto(s) del estado inicial<br>
+                        • ${fotosDespues.length} foto(s) del resultado<br>
+                        • ${data.materiales.length} material(es) con costos<br>
+                        • Diseño profesional listo para entregar
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error generando PDF:', error);
+                const summaryCard = document.querySelector('.summary-card');
+                summaryCard.innerHTML = `
+                    <div class="alert" style="background: #fee2e2; color: #dc2626; border-left-color: #dc2626;">
+                        <strong>❌ Error al generar PDF</strong><br>
+                        Hubo un problema al crear el documento. Por favor, intenta nuevamente.
+                    </div>
+                `;
+            }
+        }
+        
+        function newReport() {
+            // Limpiar formulario
+            document.querySelectorAll('input, textarea, select').forEach(input => {
+                input.value = '';
+            });
+            
+            // Limpiar galerías de fotos
+            document.getElementById('fotosAntesGallery').innerHTML = '';
+            document.getElementById('fotosDespuesGallery').innerHTML = '';
+            fotosAntes = [];
+            fotosDespues = [];
+            
+            // Volver a la primera sección
+            showSection(1);
+            
+            // Limpiar materiales extras, mantener solo el primero
+            const materialesList = document.getElementById('materialesList');
+            const materialItems = materialesList.querySelectorAll('.material-item');
+            for (let i = 1; i < materialItems.length; i++) {
+                materialItems[i].remove();
+            }
+        }
+        
+        // Auto-guardar cada minuto (simulación)
+        setInterval(() => {
+            if (currentSection > 1) {
+                const data = collectFormData();
+                console.log('Auto-guardado offline:', data);
+            }
+        }, 60000);
+        
+        // Inicializar
+        updateProgress();
+    </script>
+</body>
+</html>
